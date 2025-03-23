@@ -56,24 +56,36 @@ class BM3(GeneralRecommender):
             nn.init.xavier_normal_(self.text_trs.weight)
 
     def get_norm_adj_mat(self, interaction_matrix):
+        # 创建一个空的 DOK 矩阵
         A = sp.dok_matrix((self.n_users + self.n_items,
                            self.n_users + self.n_items), dtype=np.float32)
+
+        # 获取交互矩阵及其转置
         inter_M = interaction_matrix
         inter_M_t = interaction_matrix.transpose()
+
+        # 构建数据字典
         data_dict = dict(zip(zip(inter_M.row, inter_M.col + self.n_users),
                              [1] * inter_M.nnz))
         data_dict.update(dict(zip(zip(inter_M_t.row + self.n_users, inter_M_t.col),
                                   [1] * inter_M_t.nnz)))
-        A._update(data_dict)
-        # norm adj matrix
+
+        # 直接通过键值对更新 DOK 矩阵
+        for (row, col), value in data_dict.items():
+            A[row, col] = value
+
+        # 归一化邻接矩阵
         sumArr = (A > 0).sum(axis=1)
-        # add epsilon to avoid Devide by zero Warning
+        # 添加 epsilon 避免除零警告
         diag = np.array(sumArr.flatten())[0] + 1e-7
         diag = np.power(diag, -0.5)
         D = sp.diags(diag)
-        L = D * A * D
-        # covert norm_adj matrix to tensor
+        L = D @ A @ D  # 使用 @ 运算符进行矩阵乘法
+
+        # 将归一化的邻接矩阵转换为 COO 格式
         L = sp.coo_matrix(L)
+
+        # 将 COO 格式的稀疏矩阵转换为 PyTorch 的稀疏张量
         row = L.row
         col = L.col
         i = torch.LongTensor(np.array([row, col]))

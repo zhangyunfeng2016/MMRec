@@ -37,6 +37,7 @@ class RecDataset(object):
             return
         # if all files exists
         check_file_list = [self.config['inter_file_name']]
+        print("zhangyunfeng debug, check_file_list",check_file_list)
         for i in check_file_list:
             file_path = os.path.join(self.dataset_path, i)
             if not os.path.isfile(file_path):

@@ -11,7 +11,7 @@ hyper_num: [4]
 keep_rate: [0.5]
 alpha: [0.3]
 
-# #sports
+# #sports14
 # n_hyper_layer: [1]
 # hyper_num: [4]
 # keep_rate: [0.4]
